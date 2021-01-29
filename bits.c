@@ -207,7 +207,9 @@ int bitOr(int x, int y) {
  *   Rating: 2
  */
 int copyLSB(int x) {
-    //
+    // isolate lsb by anding x & 1
+    // not result then add 1
+    // adding 1 will return either 0 or -1
   return ~(x&1) + 1;
 }
 /* 
@@ -219,6 +221,7 @@ int copyLSB(int x) {
  *   Rating: 2
  */
 int allEvenBits(int x) {
+    // or'ing each even byte position to make sure that they are all 1
     int eBits = (0x55 << 24) | (0x55 << 16) | (0x55 << 8) | (0x55);
     return !((x & eBits) ^ eBits);
 }
@@ -232,7 +235,11 @@ int allEvenBits(int x) {
  *   Rating: 3 
  */
 int logicalShift(int x, int n) {
-    return ((x >> n) & ((1 << ((~n + 1) + 32)) + ~0));
+    // propagate sign bit
+    // get rid of 1's after shifting
+    // ~ the bitTest allows for a normal shift when positive
+    int bitTest = ((1 << 31) >> n) << 1;
+    return (x >> n) & ~bitTest;
 }
 //4
 /* 
@@ -243,7 +250,10 @@ int logicalShift(int x, int n) {
  *   Rating: 4 
  */
 int bang(int x) {
-  return 2;
+    // msb needs to be zero to give 1
+    // add inverse should come out to 0.
+    // return 1 when x is zero
+    return ((x | (~x + 1)) >> 31) + 1; ;
 }
 /*
  * bitParity - returns 1 if x contains an odd number of 0's
@@ -253,7 +263,18 @@ int bang(int x) {
  *   Rating: 4
  */
 int bitParity(int x) {
-  return 2;
+    // xor bits 1 and 2
+    // do the same with those 2 bits and the next 2
+    // then the 4 and the next 4, etc
+    // repeat until the end and one bit is left
+    // and result to 1 since( 5 is 101, and 7 is 111, etc)
+
+    x = x ^ (x >> 1);
+    x = x ^ (x >> 2);
+    x = x ^ (x >> 4);
+    x = x ^ (x >> 8);
+    x = x ^ (x >> 16);
+    return x & 1;
 }
 // Arithmetic Functions
 //2
@@ -265,7 +286,7 @@ int bitParity(int x) {
  *   Rating: 2
  */
 int isNotEqual(int x, int y) {
-  return 2;
+    return !(!((~x+1)+y));
 }
 /* 
  * negate - return -x 
@@ -275,7 +296,8 @@ int isNotEqual(int x, int y) {
  *   Rating: 2
  */
 int negate(int x) {
-  return 2;
+    // flips the bits and adds one to give you the opposite signed number
+    return (~x) + 1;
 }
 //3
 /* 
@@ -286,7 +308,8 @@ int negate(int x) {
  *   Rating: 2
  */
 int isPositive(int x) {
-  return 2;
+
+  return !(x >> 31) & !!x;
 }
 /* 
  * isNonNegative - return 1 if x >= 0, return 0 otherwise 
@@ -296,7 +319,9 @@ int isPositive(int x) {
  *   Rating: 2
  */
 int isNonNegative(int x) {
-  return 2;
+    // if the msb is 1 then we'll return a zero, and vice versa
+    // This checks the sign bit to prove our return statement.
+    return ((x >> 31) + 1);
 }
 /* 
  * rotateLeft - Rotate x to the left by n
@@ -306,8 +331,18 @@ int isNonNegative(int x) {
  *   Max ops: 25
  *   Rating: 3 
  */
+
 int rotateLeft(int x, int n) {
-  return 2;
+    // Find 32 - n  and creat mask
+    // a is the bits being shifted
+    // Make x the rotated bytes and no shifted bits added
+    int a, b, c;
+    c = 32 + ~n;
+    b = ~((~0x0) << n);
+    a = (x >> c) >> 1;
+    a = b & a;
+    x = x << n;
+    return x|a;
 }
 /* 
  * addOK - Determine if can compute x+y without overflow
