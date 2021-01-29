@@ -232,7 +232,7 @@ int allEvenBits(int x) {
  *   Rating: 3 
  */
 int logicalShift(int x, int n) {
-  return 2;
+    return ((x >> n) & ((1 << ((~n + 1) + 32)) + ~0));
 }
 //4
 /* 
@@ -318,7 +318,14 @@ int rotateLeft(int x, int n) {
  *   Rating: 3
  */
 int addOK(int x, int y) {
-  return 2;
+    /* check the signs of the variables
+     * if signs are diff, then no overflow
+     * if signs are same, check that x
+     * and y are different than the combined
+     * if not diff, then no overflow
+    */
+    int combined = x + y;
+  return !(((combined ^ x) & (combined ^ y)) >> 31);
 }
 //4
 /* 
@@ -330,7 +337,10 @@ int addOK(int x, int y) {
  *   Rating: 4
  */
 int absVal(int x) {
-  return 2;
+    // if x is pos, sets to 00..., and mask^x = x
+    // if x is neg, sets to 11..., and mask^x = ~x
+    int mask = x >> 31;
+  return (mask + x) ^ mask;
 }
 /* 
  * isNonZero - Check whether x is nonzero using
@@ -341,5 +351,8 @@ int absVal(int x) {
  *   Rating: 4 
  */
 int isNonZero(int x) {
-  return 2;
+    // checking to see if the sign bit is set for neg #'s
+    // ~x +1 is meant to replace using the - operator when checking for pos #'s
+
+    return ((x | (~x + 1)) >> 31) & 1;
 }
